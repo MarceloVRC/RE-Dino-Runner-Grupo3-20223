@@ -6,6 +6,7 @@ class Dino(Sprite):
     X_POS = 80
     Y_POS = 310
     JUMP_VEL = 8
+    Y_POS_DUCK = 340
 
     def __init__(self):
         self.image = RUNNING[0]
@@ -31,11 +32,11 @@ class Dino(Sprite):
             self.dino_run = False
             self.dino_jump = True
             self.dino_duck = False
-        elif user_input[pygame.K_DOWN]:
+        elif user_input[pygame.K_DOWN] and not self.dino_jump:
             self.dino_run = False
             self.dino_jump = False
             self.dino_duck = True
-        elif not self.dino_jump and not self.dino_duck:
+        elif not self.dino_jump:
             self.dino_run = True
             self.dino_jump = False
             self.dino_duck = False
@@ -57,18 +58,14 @@ class Dino(Sprite):
         self.step_index += 1
         
     def duck(self, user_input):
-        if user_input[pygame.K_DOWN]:
-            if self.step_index < 5 :
-                self.image = DUCKING[0]
-            else:
-                self.image = DUCKING[1]
-            self.dino_rect.x = self.X_POS
-            self.dino_rect.y = self.Y_POS + 35
-            self.step_index += 1
+        if self.step_index < 5 :
+            self.image = DUCKING[0]
         else:
-            self.dino_run = True
-            self.dino_duck = False
-            self.dino_jump = False
+            self.image = DUCKING[1]
+        self.dino_rect = self.image.get_rect()
+        self.dino_rect.x = self.X_POS
+        self.dino_rect.y = self.Y_POS_DUCK
+        self.step_index += 1
         
 
     def jump(self):

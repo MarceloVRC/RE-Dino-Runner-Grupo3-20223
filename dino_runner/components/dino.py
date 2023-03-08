@@ -1,7 +1,7 @@
 import pygame
 from pygame.sprite import Sprite
 
-from dino_runner.utils.constants import DUCKING, JUMPING, RUNNING
+from dino_runner.utils.constants import DUCKING, JUMPING, RUNNING, SOUNDS
 class Dino(Sprite):
     X_POS = 80
     Y_POS = 310
@@ -26,9 +26,10 @@ class Dino(Sprite):
         elif self.dino_jump:
             self.jump()
         elif self.dino_duck:
-            self.duck(user_input)
+            self.duck()
         
         if user_input[pygame.K_UP] and not self.dino_jump:
+            SOUNDS[1].play()
             self.dino_run = False
             self.dino_jump = True
             self.dino_duck = False
@@ -57,7 +58,7 @@ class Dino(Sprite):
         self.dino_rect.y = self.Y_POS
         self.step_index += 1
         
-    def duck(self, user_input):
+    def duck(self):
         if self.step_index < 5 :
             self.image = DUCKING[0]
         else:

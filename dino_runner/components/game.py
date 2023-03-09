@@ -3,8 +3,10 @@ import pygame
 from dino_runner.components import text_utils
 from dino_runner.components.dino import Dino
 from dino_runner.components.obstacles.obstaclemanager import ObstacleManager
+from dino_runner.components.power_ups.power_up_manager import PowerUpManager
+from dino_runner.components.power_ups.smallheart import SmallHeart
 
-from dino_runner.utils.constants import BG, CLOUD, DIE_IMAGE, ICON, RESET_BUTTON, RUNNING, SCREEN_HEIGHT, SCREEN_WIDTH, SOUNDS, START_IMAGE, TITLE, FPS
+from dino_runner.utils.constants import BG, CLOUD, DIE_IMAGE, GAME_OVER, HEART, ICON, RESET_BUTTON, RUNNING, SCREEN_HEIGHT, SCREEN_WIDTH, SOUNDS, START_IMAGE, TITLE, FPS
 
 
 class Game:
@@ -25,10 +27,11 @@ class Game:
         self.death_count = 0
         self.max_score = 0
         self.x_pos_cloud = SCREEN_WIDTH
+        self.power_up_manager = PowerUpManager()
 
     def run(self):
-        self.obstacle_manager.reset_obstacles()
         # Game loop: events - update - draw
+        self.create_components()
         self.playing = True
         while self.playing:
             self.events()
@@ -41,9 +44,12 @@ class Game:
                 self.playing = False
 
     def update(self):
+        self.player.check_invincibility(self.screen)
+        self.player.check_hammering(self.screen)
         user_input = pygame.key.get_pressed()
         self.player.update(user_input)
         self.obstacle_manager.update(self)
+        self.power_up_manager.update(self.points, self.game_speed, self.player)
 
     def draw(self):
         self.clock.tick(FPS)
@@ -51,8 +57,12 @@ class Game:
         self.draw_background()
         self.player.draw(self.screen)
         self.obstacle_manager.draw(self.screen)
+        self.power_up_manager.draw(self.screen)
         self.draw_clouds()
         self.score()
+        self.screen.blit(HEART, (35, 20) )
+        extra_lives, extra_lives_rect = text_utils.get_centered_message('     x '+ str(self.player.extra_lives) , 70, 33, 18)
+        self.screen.blit(extra_lives, extra_lives_rect)
         pygame.display.update()
         pygame.display.flip()
 
@@ -71,7 +81,6 @@ class Game:
                 self.show_menu()
 
     def show_menu(self):
-        self.running = True
         white_color = (255,255,255)
         self.screen.fill(white_color)
         self.print_menu_elements()
@@ -85,6 +94,7 @@ class Game:
             #tarea
         else: 
             self.die_screen()
+            return
 
         self.screen.blit(BG , (0,380))
         self.screen.blit(START_IMAGE , (80,310))
@@ -122,9 +132,10 @@ class Game:
         self.y_pos_bg = 380
         self.points = 0
         self.x_pos_cloud = SCREEN_WIDTH
+        self.obstacle_manager.reset_obstacles()
+        self.player.extra_lives = 0
 
     def die_screen(self):
-        self.running = True
         white_color = (255,255,255)
         self.screen.fill(white_color)
         self.print_die_elements()
@@ -132,17 +143,19 @@ class Game:
         self.handle_key_events_on_menu()
 
     def print_die_elements(self):
-        text, text_rect = text_utils.get_centered_message('Press any Key to play again', SCREEN_WIDTH //2 , 100)
+        text, text_rect = text_utils.get_centered_message('Press any Key to play again', 90 , 10, 12)
         self.screen.blit(text, text_rect)
         self.screen.blit(BG , (0,380))
         self.screen.blit(DIE_IMAGE , (80, 310) )
         self.screen.blit(RESET_BUTTON , (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT // 2-50))
+        self.screen.blit(GAME_OVER , (SCREEN_WIDTH // 2-  200, SCREEN_HEIGHT // 2-150))
         deaths, deaths_rect = text_utils.get_centered_message('DEATHS: '+ str(self.death_count) , 1000, 50, 16)
         self.screen.blit(deaths, deaths_rect)
-        max_score, max_score_rect = text_utils.get_centered_message('MAX SCORE: '+ str(self.max_score) , 1000, 70, 16)
+        max_score, max_score_rect = text_utils.get_centered_message('HIGH SCORE: '+ str(self.max_score) , 1000, 70, 16)
         self.screen.blit(max_score, max_score_rect)
 
     def draw_clouds(self):
+        ## EN DESARROLLO
         self.screen.blit(CLOUD, (self.x_pos_cloud, 50))
         self.screen.blit(CLOUD, (self.x_pos_cloud - 200, 70))
         self.screen.blit(CLOUD, (self.x_pos_cloud + 200, 130))
@@ -151,3 +164,19 @@ class Game:
         self.x_pos_cloud -= 1
         if self.x_pos_cloud < -200:
             self.x_pos_cloud = SCREEN_WIDTH
+
+    def create_components(self):
+        self.obstacle_manager.reset_obstacles()
+        self.power_up_manager.reset_power_ups(self.points)
+
+    def check_shield(self):
+        if self.player.shield == True:
+            return True
+        else:
+            return False
+    
+    def check_extra_lives(self):
+        if self.player.extra_lives == 0:
+            return True
+        else:
+            return False

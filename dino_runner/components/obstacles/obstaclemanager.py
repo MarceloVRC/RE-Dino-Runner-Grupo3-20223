@@ -1,13 +1,16 @@
 import random
+import time
 import pygame
+from dino_runner.components import text_utils
 from dino_runner.components.obstacles.bird import Bird
 from dino_runner.components.obstacles.cactus import Cactus
-from dino_runner.utils.constants import LARGE_CACTUS, SMALL_CACTUS, SOUNDS
+from dino_runner.utils.constants import LARGE_CACTUS, SCREEN_WIDTH, SMALL_CACTUS, SOUNDS
 
 
 class ObstacleManager:
     def __init__(self):
         self.obstacles = []
+        self.invincibility_timer = 0
     
     def update(self, game):
         if len(self.obstacles) == 0:
@@ -22,11 +25,24 @@ class ObstacleManager:
         for obstacle in self.obstacles:
             obstacle.update(game.game_speed, self.obstacles) 
             if game.player.dino_rect.colliderect(obstacle.rect):
-                SOUNDS[0].play()
-                game.set_max_score(game.points)
-                game.death_count += 1
-                game.reset_game()
-                break
+                if time.time() < self.invincibility_timer:
+                    pass
+                elif game.check_shield():
+                    pass
+                elif game.player.hammering:
+                    SOUNDS[3].play()
+                    game.points += 250
+                    self.invincibility_timer = time.time() + 1
+                elif game.player.extra_lives > 0:
+                    SOUNDS[5].play()
+                    game.player.extra_lives -= 1
+                    self.invincibility_timer = time.time() + 1
+                else:
+                    SOUNDS[0].play()
+                    game.set_max_score(game.points)
+                    game.death_count += 1
+                    game.reset_game()
+                    break
 
     def draw(self, screen):
         for obstacle in self.obstacles:

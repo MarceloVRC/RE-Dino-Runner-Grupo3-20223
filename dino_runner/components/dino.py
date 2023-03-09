@@ -1,7 +1,8 @@
 import pygame
 from pygame.sprite import Sprite
+from dino_runner.components import text_utils
 
-from dino_runner.utils.constants import DUCKING, JUMPING, RUNNING, SOUNDS
+from dino_runner.utils.constants import DEFAULT_TYPE, DUCKING, DUCKING_HAMMER, DUCKING_SHIELD, HAMMER_TYPE, JUMPING, JUMPING_HAMMER, JUMPING_SHIELD, RUNNING, RUNNING_HAMMER, RUNNING_SHIELD, SHIELD_TYPE, SOUNDS
 class Dino(Sprite):
     X_POS = 80
     Y_POS = 310
@@ -9,7 +10,24 @@ class Dino(Sprite):
     Y_POS_DUCK = 340
 
     def __init__(self):
-        self.image = RUNNING[0]
+        self.duck_img = {
+            DEFAULT_TYPE: DUCKING, 
+            SHIELD_TYPE: DUCKING_SHIELD,
+            HAMMER_TYPE: DUCKING_HAMMER
+        }
+        self.run_img = {
+            DEFAULT_TYPE: RUNNING,
+            SHIELD_TYPE: RUNNING_SHIELD,
+            HAMMER_TYPE: RUNNING_HAMMER
+        }
+        self.jump_img = {
+            DEFAULT_TYPE: JUMPING, 
+            SHIELD_TYPE: JUMPING_SHIELD,
+            HAMMER_TYPE: JUMPING_HAMMER
+        }
+        self.type = DEFAULT_TYPE
+        self.image = self.run_img[self.type][0]
+        
         self.dino_rect = self.image.get_rect()
         self.dino_rect.x = self.X_POS
         self.dino_rect.y = self.Y_POS
@@ -18,9 +36,17 @@ class Dino(Sprite):
         self.dino_duck = False
         self.dino_jump = False
         self.jump_vel = self.JUMP_VEL
+        self.setup_state_booleans()
+        self.extra_lives = 0
+        self.hammering = False
+        self.hummer_time_up = 0
+
+    def setup_state_booleans (self):
+        self.has_powerup = False
+        self.shield = False
+        self.shield_time_up = 0
 
     def update(self, user_input):
-
         if self.dino_run:
             self.run()
         elif self.dino_jump:
@@ -45,24 +71,23 @@ class Dino(Sprite):
         if self.step_index >= 10:
                 self.step_index = 0
 
-
     def draw(self, screen):
         screen.blit(self.image, (self.dino_rect.x , self.dino_rect.y))
 
     def run(self):
         if self.step_index < 5 :
-            self.image = RUNNING[0]
+            self.image = self.run_img[self.type][0]
         else:
-            self.image = RUNNING[1]
+            self.image = self.run_img[self.type][1]
         self.dino_rect.x = self.X_POS
         self.dino_rect.y = self.Y_POS
         self.step_index += 1
         
     def duck(self):
         if self.step_index < 5 :
-            self.image = DUCKING[0]
+            self.image = self.duck_img[self.type][0]
         else:
-            self.image = DUCKING[1]
+            self.image = self.duck_img[self.type][1]
         self.dino_rect = self.image.get_rect()
         self.dino_rect.x = self.X_POS
         self.dino_rect.y = self.Y_POS_DUCK
@@ -70,7 +95,7 @@ class Dino(Sprite):
         
 
     def jump(self):
-        self.image = JUMPING
+        self.image = self.jump_img[self.type]
         if self.dino_jump:
             self.dino_rect.y -= self.jump_vel * 4
             self.jump_vel -= 0.8
@@ -78,3 +103,27 @@ class Dino(Sprite):
             self.dino_rect.y = self.Y_POS
             self.dino_jump = False
             self.jump_vel = self.JUMP_VEL
+    
+    
+    def check_invincibility (self, screen):
+        if self.shield:
+            time_to_show = round ((self.shield_time_up - pygame.time.get_ticks())/ 1000 , 2)
+            if time_to_show >=0:
+                pass
+            else:
+                self.shield = False
+                self.update_to_default(SHIELD_TYPE)
+
+    def check_hammering (self, screen):
+        if self.hammering:
+            time_to_show = round ((self.hummer_time_up - pygame.time.get_ticks())/ 1000 , 2)
+            if time_to_show >=0:
+                print(time_to_show)
+            else:
+                self.hammering = False
+                self.update_to_default(HAMMER_TYPE)
+
+    def update_to_default (self, current_type):
+        if self.type == current_type:
+            self.type = DEFAULT_TYPE
+    

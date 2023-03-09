@@ -71,6 +71,8 @@ BG = pygame.image.load(os.path.join(DIR, 'Other/Track.png'))
 HEART = pygame.image.load(os.path.join(DIR, 'Other/SmallHeart.png'))
 
 DEFAULT_TYPE = "default"
+SHIELD_TYPE = 'shield'
+HAMMER_TYPE = 'hammer'
 
 START_IMAGE = pygame.image.load(os.path.join(DIR, "Dino/DinoStart.png"))
 DIE_IMAGE = pygame.image.load(os.path.join(DIR, "Dino/DinoDead.png"))
@@ -79,7 +81,21 @@ RESET_BUTTON = pygame.image.load(os.path.join(DIR, 'Other/Reset.png'))
 pygame.mixer.init()
 
 SOUNDS = [
+    # 0 DIE
     pygame.mixer.Sound(os.path.join(DIR,'Other/die.wav')),
+    # 1 JUMP
     pygame.mixer.Sound(os.path.join(DIR, 'Other/jump.wav')),
-    pygame.mixer.Sound(os.path.join(DIR, 'Other/point.wav'))
+    # 2 POINT
+    pygame.mixer.Sound(os.path.join(DIR, 'Other/point.wav')),
+    # 3 HUMMERING
+    pygame.mixer.Sound(os.path.join(DIR, 'Other/008865223_prev.wav')),
+    # 4 HUMMER
+    pygame.mixer.Sound(os.path.join(DIR, 'Other/008887041_prev.wav')),
+    # 5 -LIVE
+    pygame.mixer.Sound(os.path.join(DIR, 'Other/pacman-eating-cherry.wav')),
+    # 6 +LIVE
+    pygame.mixer.Sound(os.path.join(DIR, 'Other/pacman-eating-ghost.wav')),
+    # 7 SHIELD
+    pygame.mixer.Sound(os.path.join(DIR, 'Other/kirby-super-star-1up.wav'))
 ]
+GAME_OVER = pygame.image.load(os.path.join(DIR, 'Other/GameOver.png'))

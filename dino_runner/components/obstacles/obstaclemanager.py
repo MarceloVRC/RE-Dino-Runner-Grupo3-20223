@@ -32,6 +32,7 @@ class ObstacleManager:
                 elif game.player.hammering:
                     SOUNDS[3].play()
                     game.points += 250
+                    self.obstacles.pop()
                     self.invincibility_timer = time.time() + 1
                 elif game.player.extra_lives > 0:
                     SOUNDS[5].play()

@@ -24,7 +24,7 @@ class PowerUpManager:
         self.points = points
         if len(self.power_ups) == 0:
             if self.when_appers == self.points:
-                aleatory = random.randint(1,3)
+                aleatory = 3 #random.randint(1,3)
                 if aleatory == 1:
                     self.power_ups.append(Shield())
                 elif aleatory == 2:
